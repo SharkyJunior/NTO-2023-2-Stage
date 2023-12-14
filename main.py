@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
 
-vid = cv2.VideoCapture(0)
+vid = cv2.VideoCapture(1)
+font = cv2.FONT_HERSHEY_COMPLEX
 
 while True:
 
@@ -13,23 +14,32 @@ while True:
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (5, 5), 0)
     gray = cv2.medianBlur(gray, 5)
-    gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                 cv2.THRESH_BINARY, 11, 3.5)
-    kernel = np.ones((2, 3), np.uint8)
-    gray = cv2.erode(gray, kernel, iterations=1)
-    gray = cv2.dilate(gray, kernel, iterations=1)
+    # gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+    #                              cv2.THRESH_BINARY, 11, 3.5)
+    # kernel = np.ones((2, 3), np.uint8)
+    # gray = cv2.erode(gray, kernel, iterations=1)
+    # gray = cv2.dilate(gray, kernel, iterations=1)
 
     circles = cv2.HoughCircles(
-        gray, cv2.HOUGH_GRADIENT, 1, 200, param1=30, param2=45, minRadius=50, maxRadius=200)
+        gray, cv2.HOUGH_GRADIENT, 1, minDist=100, param1=60, param2=50, minRadius=50, maxRadius=200)
 
     if circles is not None:
-        frame2 = frame
+        print(gray.shape)
+        print(frame.shape)
         circles = np.round(circles[0, :]).astype("int")
-        for (x, y, r) in circles[:5]:
-            cv2.circle(output, (x, y), r, (0, 255, 0), 4)
+        c = 0
+        for (x, y, r) in circles:
+            color = (int(frame[y, x, 0]), int(
+                frame[y, x, 1]), int(frame[y, x, 2]))
+            print(color)
+            cv2.circle(output, (x, y), r, color, 4)
             cv2.rectangle(output, (x - 5, y - 5),
-                          (x + 5, y + 5), (0, 128, 255), -1)
-        # cv2.imshow('gray', gray)
+                          (x + 5, y + 5), (0, 200, 250), -1)
+            cv2.putText(output, f'circle{c}', (int(x+(r**0.5))+100, int(y +
+                        (r**0.5))+100), font, 1, (255, 255, 255), 1, cv2.LINE_AA)
+            c += 1
+        cv2.putText(output, f'Circle count: {len(circles)}',
+                    (int(frame.shape[1] * 0.8), int(frame.shape[0] * 0.1)), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
     cv2.imshow('frame', output)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
