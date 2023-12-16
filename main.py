@@ -1,26 +1,31 @@
 import cv2
 import numpy as np
 from detect_colors import detect_colors
+import time
+
 
 vid = cv2.VideoCapture(1)
 font = cv2.FONT_HERSHEY_COMPLEX
 
+def get_color_at_point(image, x, y, radius):
+  
+    # Получаем область вокруг точки.
+    roi = image[int(y - radius):int(y + radius), int(x - radius):int(x + radius)]
+    # Конвертируем область в цветовое пространство HSV.
+
+    # Возвращаем среднее значение цвета.
+    b, g, r, smth = cv2.mean(roi)
+    return (b, g, r)
 
 while True:
+    time.sleep(1 / 24)
 
-    # Capture the video frame
-    # by frame
     ret, frame = vid.read()
     output = frame.copy()
-    # gray = cv2.medianBlur(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), 3)
+
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (5, 5), 0)
     gray = cv2.medianBlur(gray, 5)
-    # gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-    #                              cv2.THRESH_BINARY, 11, 3.5)
-    # kernel = np.ones((2, 3), np.uint8)
-    # gray = cv2.erode(gray, kernel, iterations=1)
-    # gray = cv2.dilate(gray, kernel, iterations=1)
 
     circles = cv2.HoughCircles(
         gray, cv2.HOUGH_GRADIENT, 1, minDist=100, param1=60, param2=50, minRadius=50, maxRadius=200)
@@ -31,8 +36,7 @@ while True:
         circles = np.round(circles[0, :]).astype("int")
         c = 0
         for (x, y, r) in circles:
-            color = (int(frame[y, x, 0]), int(
-                frame[y, x, 1]), int(frame[y, x, 2]))
+            color = get_color_at_point(frame, x, y, r / 2)
             print(color)
             cv2.circle(output, (x, y), r, color, 4)
             cv2.rectangle(output, (x - 5, y - 5),
@@ -52,7 +56,7 @@ while True:
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-# After the loop release the cap object
+
 vid.release()
-# Destroy all the windows
 cv2.destroyAllWindows()
+
