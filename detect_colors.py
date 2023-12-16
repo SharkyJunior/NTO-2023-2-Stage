@@ -1,3 +1,6 @@
+import cv2
+import numpy as np
+
 def detect_colors(bgr: tuple) -> str:
     b, g, r = map(int, bgr)
     if b <= 35 and g <= 35 and r >= 60:
@@ -10,5 +13,8 @@ def detect_colors(bgr: tuple) -> str:
         return 'yellow'
     elif b <= 20 and g <= 20 and r <= 20:
         return 'black'
+        return "blue"
     else:
-        return 'unknown'
+        return "unknown"
+
+
