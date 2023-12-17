@@ -10,13 +10,18 @@ import tkinter as tk
 
 flag = False
 
+circles1 = []
+
+
     # Функция для обработки щелчка на кнопке
 def on_button_click(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         if 150 < x < 300 and 100 < y < 200:  # Проверяем, был ли щелчок внутри прямоугольной области кнопки
             print("Кнопка 'Start' была нажата!")
             global flag
+            global circles1
             flag = True
+            circles1 = []
 
 
 # Создаем пустое изображение
@@ -53,13 +58,6 @@ def get_color_at_point(image, x, y, radius):
     # Возвращаем среднее значение цвета.
     b, g, r, smth = cv2.mean(roi)
     return (b, g, r)
-
-circles1 = [
-    {'color': (0, 255, 0), 'x': 100, 'y': 0, 'radius': 30},
-    {'color': (0, 0, 255), 'x': 200, 'y': 0, 'radius': 20},
-    {'color': (255, 0, 0), 'x': 300, 'y': 0, 'radius': 40}
-]
-
 
 
 while True:
@@ -137,6 +135,8 @@ while True:
             cv2.circle(output, (x, y), r, color, -1)
             temp = np.array(borders)
             if len(temp) > 0 and len(temp) > 0 and min(temp[:, 0]) < x < max(temp[:, 0]) and min(temp[:, 1]) < y < max(temp[:, 1]):
+                if flag:
+                    circles1.append({'color': color, 'x': 300 + len(circles1) * 300, 'y': -100, 'radius': r})
                 cv2.putText(output, f'color: {detect_colors(color)}, inside',
                             (int(x+(r**0.5))+100, int(y + (r**0.5))+100), font,
                             1, (255, 255, 255), 1, cv2.LINE_AA)
@@ -144,16 +144,11 @@ while True:
                 cv2.putText(output, f'color: {detect_colors(color)}, not inside',
                             (int(x+(r**0.5))+100, int(y + (r**0.5))+100), font,
                             1, (255, 255, 255), 1, cv2.LINE_AA)
-
+        flag = False
         # пишем общее количество найденных кругов
         cv2.putText(output, f'Circle count: {len(circles)}, Rectangle count: {len(rectangles)}',
                     (int(frame.shape[1] * 0.65), int(frame.shape[0] * 0.1)), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
-        
-
-        cv2.putText(output, 'Press "S" to Start basket simulation',
-                    (int(frame.shape[1] * 0.65), int(frame.shape[0] * 0.2)), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
-
-    # чтобы предотвратить "подвисание" программы при слишком большом количестве кругов, при
+            # чтобы предотвратить "подвисание" программы при слишком большом количестве кругов, при
     # большом количестве кругов прекращаем отрисовку
     elif circles is not None and len(circles) >= 15:
         cv2.putText(output, 'Cannot distinquish circles, make them more clear or remove excess items',
@@ -165,13 +160,14 @@ while True:
 
 
 
-    if flag:
+    height, width, channels = output.shape
             # Обновляем положение кругов
-        for circle in circles1:
-            circle['y'] += 5  # Изменяем положение круга, чтобы он двигался вниз
-
-            # Рисуем круги на изображении
-            cv2.circle(output, (circle['x'], circle['y']), circle['radius'], circle['color'], -1)
+    for circle in circles1:
+        circle['y'] += 30  # Изменяем положение круга, чтобы он двигался вниз
+        if circle['y'] >= height + 200:
+            circles1 = []
+        # Рисуем круги на изображении
+        cv2.circle(output, (circle['x'], circle['y']), circle['radius'], circle['color'], -1)
 
 
 
