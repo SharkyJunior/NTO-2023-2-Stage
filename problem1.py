@@ -45,10 +45,10 @@ while True:
             color = get_color_at_point(frame, x, y, r / 2)
             print(color)
             # "обводим" круг
-            cv2.circle(output, (x, y), r, color, 4)
+            cv2.circle(output, (x, y), r, color, -1)
             # ставим "точку" центра круга
-            cv2.rectangle(output, (x - 5, y - 5),
-                          (x + 5, y + 5), (0, 200, 250), -1)
+            # cv2.rectangle(output, (x - 5, y - 5),
+            #               (x + 5, y + 5), (0, 200, 250), -1)
             # пишем рядом с кругом его цвет
             cv2.putText(output, f'color: {detect_colors(color)}',
                         (int(x+(r**0.5))+100, int(y + (r**0.5))+100), font,

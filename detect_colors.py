@@ -10,7 +10,7 @@ def detect_colors(bgr: tuple) -> str:
         return 'blue'
     elif g >= 1.5*b and g >= 2*r:
         return 'green'
-    elif g >= 3*b and r >= 3*b and (0.85*g <= r <= 1.15*g):
+    elif g >= 2.5*b and r >= 2.5*b and (0.85*g <= r <= 1.15*g):
         return 'yellow'
     elif g >= 1.5*b and r >= 1.5*b and r >= 1.4*g:
         return 'orange'

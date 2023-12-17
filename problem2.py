@@ -50,7 +50,7 @@ while True:
             radius = r
             color = get_color_at_point(frame, x, y, r / 2)
             print(color)
-            cv2.circle(output, (x, y), r, color, 4)
+            cv2.circle(output, (x, y), r, color, -1)
             cv2.rectangle(output, (x - 5, y - 5),
                           (x + 5, y + 5), (0, 200, 250), -1)
             cv2.putText(output, f'color: {detect_colors(color)}, ({int(color[0])}, {int(color[1])}, {int(color[2])})',

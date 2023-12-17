@@ -4,8 +4,14 @@ from detect_colors import detect_colors
 import time
 
 
+def back(*args):
+    pass
+
+
 vid = cv2.VideoCapture(1)
 font = cv2.FONT_HERSHEY_COMPLEX
+window = cv2.namedWindow("Display_Image", cv2.WINDOW_NORMAL)
+cv2.createButton("Back", back, None, cv2.QT_PUSH_BUTTON, 1)
 
 
 def get_color_at_point(image, x, y, radius):
@@ -35,42 +41,42 @@ while True:
     circles = cv2.HoughCircles(
         gray, cv2.HOUGH_GRADIENT, 1, minDist=100, param1=60, param2=50, minRadius=50, maxRadius=200)
 
-
-
-    
-
     # Применяем адаптивный пороговый фильтр
-    thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
+    thresh = cv2.adaptiveThreshold(
+        gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
 
     # Находим контуры
-    contours, _ = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(
+        thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
     # Ищем квадраты в контурах
     rectangles = []
-    
     for contour in contours:
         perimeter = cv2.arcLength(contour, True)
         approx = cv2.approxPolyDP(contour, 0.01 * perimeter, True)
         x, y, w, h = cv2.boundingRect(approx)
 
         # Проверяем, что контур соответствует прямоугольнику и имеет нужные пропорции
-        # aspect_ratio = float(w)/h  
+        # aspect_ratio = float(w)/h
         # and 0.9 < aspect_ratio < 1.1
-        if len(approx) == 4 and cv2.contourArea(contour) > 1000 and w > 100 and h > 100 and w < 700 and h < 700:
+        if len(approx) == 4 and cv2.contourArea(contour) > 2500 and w > 100 and h > 100 and w < 1000 and h < 1000:
             rectangles.append(approx)
 
-    rectangles = [rectangles[0]]
-    # Отрисовываем найденные квадраты
-    cv2.drawContours(output, rectangles, -1, (200, 50, 100), 3)
+    if len(rectangles) > 0:
+        rectangles = [rectangles[0]]
+        print(rectangles)
+        # Отрисовываем найденные квадраты
+        cv2.drawContours(output, rectangles, -1, (200, 50, 100), 3)
 
+    borders = []
     # Выводим координаты вершин квадрата
     print("point coords:", end=' ')
     for square in rectangles:
         # cv2.fillPoly(output, [square], (0,255,0))
         for point in square:
             print(point[0], end=' ')
+            borders.append(point[0])
         print()
-
 
     if circles is not None and len(circles) < 15:
         print(gray.shape)
@@ -82,7 +88,16 @@ while True:
             color = get_color_at_point(frame, x, y, r / 2)
             print(color)
             # "обводим" круг
-            cv2.circle(output, (x, y), r, color, 4)
+            cv2.circle(output, (x, y), r, color, -1)
+            temp = np.array(borders)
+            if len(temp) > 0 and len(temp) > 0 and min(temp[:, 0]) < x < max(temp[:, 0]) and min(temp[:, 1]) < y < max(temp[:, 1]):
+                cv2.putText(output, f'color: {detect_colors(color)}, inside',
+                            (int(x+(r**0.5))+100, int(y + (r**0.5))+100), font,
+                            1, (255, 255, 255), 1, cv2.LINE_AA)
+            else:
+                cv2.putText(output, f'color: {detect_colors(color)}, not inside',
+                            (int(x+(r**0.5))+100, int(y + (r**0.5))+100), font,
+                            1, (255, 255, 255), 1, cv2.LINE_AA)
 
         # пишем общее количество найденных кругов
         cv2.putText(output, f'Circle count: {len(circles)}, Rectangle count: {len(rectangles)}',
@@ -98,9 +113,8 @@ while True:
         cv2.putText(output, 'No circles detected',
                     (int(frame.shape[1] * 0.8), int(frame.shape[0] * 0.1)), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
-
     # выводим кадр на экран
-    cv2.imshow('frame', output)
+    cv2.imshow('Display_Image', output)
     # обрабатываем клавишу выхода из программы
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
