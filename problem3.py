@@ -2,16 +2,32 @@ import cv2
 import numpy as np
 from detect_colors import detect_colors
 import time
+import tkinter as tk
+# cv2.WITH_QT=True
 
 
 def back(*args):
     pass
 
 
+
+    # Функция для обработки щелчка на кнопке
+def on_button_click(event, x, y, flags, param):
+    if event == cv2.EVENT_LBUTTONDOWN:
+        if 150 < x < 300 and 100 < y < 200:  # Проверяем, был ли щелчок внутри прямоугольной области кнопки
+            print("Кнопка 'Start' была нажата!")
+
+
+
 vid = cv2.VideoCapture(1)
 font = cv2.FONT_HERSHEY_COMPLEX
 window = cv2.namedWindow("Display_Image", cv2.WINDOW_NORMAL)
-cv2.createButton("Back", back, None, cv2.QT_PUSH_BUTTON, 1)
+cv2.setMouseCallback('Display_Image', on_button_click)
+
+# cv2.createButton("Back", back, None, cv2.QT_PUSH_BUTTON, 1)
+
+
+
 
 
 def get_color_at_point(image, x, y, radius):
@@ -26,11 +42,25 @@ def get_color_at_point(image, x, y, radius):
     return (b, g, r)
 
 
+
+
+
+
 while True:
     time.sleep(1 / 24)
 
     ret, frame = vid.read()
     output = frame.copy()
+
+    # Рисуем прямоугольную область-кнопку на изображении
+    cv2.rectangle(output, (150, 100), (300, 200), (200, 200, 200), -1)
+
+    # Добавляем текст "Start" в кнопку
+    cv2.putText(output, 'Start', (180, 160), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+
+    # Показываем окно с изображением и добавляем обработчик для щелчка мыши на кнопке
+
+
 
     # формируем ч/б картинку с размытием для ускорения определения кругов
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -64,29 +94,29 @@ while True:
 
     if len(rectangles) > 0:
         rectangles = [rectangles[0]]
-        print(rectangles)
+        # print(rectangles)
         # Отрисовываем найденные квадраты
         cv2.drawContours(output, rectangles, -1, (200, 50, 100), 3)
 
     borders = []
     # Выводим координаты вершин квадрата
-    print("point coords:", end=' ')
+    # print("point coords:", end=' ')
     for square in rectangles:
         # cv2.fillPoly(output, [square], (0,255,0))
         for point in square:
-            print(point[0], end=' ')
+            # print(point[0], end=' ')
             borders.append(point[0])
-        print()
+        # print()
 
     if circles is not None and len(circles) < 15:
-        print(gray.shape)
-        print(frame.shape)
+        # print(gray.shape)
+        # print(frame.shape)
         circles = np.round(circles[0, :]).astype("int")
 
         # отрисовываем каждый круг и пишем рядом с ним цвет для него
         for (x, y, r) in circles:
             color = get_color_at_point(frame, x, y, r / 2)
-            print(color)
+            # print(color)
             # "обводим" круг
             cv2.circle(output, (x, y), r, color, -1)
             temp = np.array(borders)
@@ -102,6 +132,10 @@ while True:
         # пишем общее количество найденных кругов
         cv2.putText(output, f'Circle count: {len(circles)}, Rectangle count: {len(rectangles)}',
                     (int(frame.shape[1] * 0.65), int(frame.shape[0] * 0.1)), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
+        
+
+        cv2.putText(output, 'Press "S" to Start basket simulation',
+                    (int(frame.shape[1] * 0.65), int(frame.shape[0] * 0.2)), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
     # чтобы предотвратить "подвисание" программы при слишком большом количестве кругов, при
     # большом количестве кругов прекращаем отрисовку
@@ -118,6 +152,9 @@ while True:
     # обрабатываем клавишу выхода из программы
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
+
+    if cv2.waitKey(1) & 0xFF == ord('s'):
+        print('go go go')
 
 
 # Деверь, шурин, золовка, невестка, свекр, кумовья, крестник, падчерица, отчим, дядья, сватья, кузина, сноха
