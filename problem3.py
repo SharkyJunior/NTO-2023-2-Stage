@@ -6,16 +6,29 @@ import tkinter as tk
 # cv2.WITH_QT=True
 
 
-def back(*args):
-    pass
 
 
+flag = False
 
     # Функция для обработки щелчка на кнопке
 def on_button_click(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         if 150 < x < 300 and 100 < y < 200:  # Проверяем, был ли щелчок внутри прямоугольной области кнопки
             print("Кнопка 'Start' была нажата!")
+            global flag
+            flag = True
+
+
+# Создаем пустое изображение
+image = np.zeros((480, 640, 3), dtype=np.uint8)
+
+# Задаем массив кругов (цвет и радиус)
+circles_1 = [
+    {'color': (0, 255, 0), 'x': 100, 'y': 500, 'radius': 30},
+    {'color': (0, 0, 255), 'x': 200, 'y': 200, 'radius': 20},
+    {'color': (255, 0, 0), 'x': 300, 'y': 100, 'radius': 40}
+]
+
 
 
 
@@ -41,8 +54,11 @@ def get_color_at_point(image, x, y, radius):
     b, g, r, smth = cv2.mean(roi)
     return (b, g, r)
 
-
-
+circles1 = [
+    {'color': (0, 255, 0), 'x': 100, 'y': 0, 'radius': 30},
+    {'color': (0, 0, 255), 'x': 200, 'y': 0, 'radius': 20},
+    {'color': (255, 0, 0), 'x': 300, 'y': 0, 'radius': 40}
+]
 
 
 
@@ -147,14 +163,24 @@ while True:
         cv2.putText(output, 'No circles detected',
                     (int(frame.shape[1] * 0.8), int(frame.shape[0] * 0.1)), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
+
+
+    if flag:
+            # Обновляем положение кругов
+        for circle in circles1:
+            circle['y'] += 5  # Изменяем положение круга, чтобы он двигался вниз
+
+            # Рисуем круги на изображении
+            cv2.circle(output, (circle['x'], circle['y']), circle['radius'], circle['color'], -1)
+
+
+
+
     # выводим кадр на экран
     cv2.imshow('Display_Image', output)
     # обрабатываем клавишу выхода из программы
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
-
-    if cv2.waitKey(1) & 0xFF == ord('s'):
-        print('go go go')
 
 
 # Деверь, шурин, золовка, невестка, свекр, кумовья, крестник, падчерица, отчим, дядья, сватья, кузина, сноха
